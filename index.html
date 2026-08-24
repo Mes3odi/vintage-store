@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -72,6 +72,33 @@
             cursor: pointer;
             padding: 0 4px;
         }
+
+        /* Modal styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: var(--bg);
+            border: 3px solid var(--border);
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 8px 8px 0px var(--ink);
+        }
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0 1rem 0;
+            border: 2px solid var(--border);
+            font-family: 'Space Mono', monospace;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -86,27 +113,50 @@
     </header>
 
     <main class="grid" id="product-grid">
-        <!-- Products load dynamically from Firebase -->
+        <!-- Products load dynamically -->
     </main>
 
+    <!-- Request Form Modal -->
+    <div class="modal-overlay" id="request-modal">
+        <div class="modal">
+            <h2 id="modal-title" style="font-family: 'Special Elite', cursive; margin-top:0;">Request Item</h2>
+            <form id="order-form">
+                <label>Your Name / Contact:</label>
+                <input type="text" id="cust-name" required placeholder="e.g. Alex">
+
+                <label>Phone / WhatsApp Number:</label>
+                <input type="text" id="cust-phone" required placeholder="e.g. +212...">
+
+                <label>Delivery Address:</label>
+                <textarea id="cust-address" rows="3" required placeholder="Full shipping address"></textarea>
+
+                <button type="submit" style="width: 100%; padding: 0.75rem; background: var(--accent); color: white; border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer;">SEND REQUEST</button>
+                <button type="button" onclick="closeModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: transparent; border: 1px solid var(--border); cursor: pointer;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        const FIREBASE_URL = "https://vintage-archive-store-default-rtdb.firebaseio.com/products.json";
+        const FIREBASE_PRODUCTS_URL = "https://vintage-archive-store-default-rtdb.firebaseio.com/products.json";
+        const FIREBASE_REQUESTS_URL = "https://vintage-archive-store-default-rtdb.firebaseio.com/requests.json";
 
         const translations = {
-            en: { stockMsg: "Available Artifact", soldOut: "Lost in Time", buyBtn: "Claim Piece", loading: "Unearthing relics..." },
-            fr: { stockMsg: "Pièce Disponible", soldOut: "Épuisé dans le Temps", buyBtn: "Acquérir", loading: "Fouilles en cours..." },
-            ar: { stockMsg: "قطعة متوفرة", soldOut: "ضاعت في الزمن", buyBtn: "حجز القطعة", loading: "جاري البحث عن الأثريات..." }
+            en: { stockMsg: "Available Artifact", soldOut: "Lost in Time", buyBtn: "Request Piece", loading: "Unearthing relics..." },
+            fr: { stockMsg: "Pièce Disponible", soldOut: "Épuisé dans le Temps", buyBtn: "Demander la Pièce", loading: "Fouilles en cours..." },
+            ar: { stockMsg: "قطعة متوفرة", soldOut: "ضاعت في الزمن", buyBtn: "طلب القطعة", loading: "جاري البحث عن الأثريات..." }
         };
 
         let currentLang = 'en';
         let rawProductsData = {};
+        let selectedItemName = "";
+        let selectedItemPrice = "";
 
         async function loadInventory() {
             const grid = document.getElementById('product-grid');
             grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-style: italic;">${translations[currentLang].loading}</p>`;
 
             try {
-                const response = await fetch(FIREBASE_URL);
+                const response = await fetch(FIREBASE_PRODUCTS_URL);
                 rawProductsData = await response.json();
                 renderGrid();
             } catch (error) {
@@ -143,7 +193,7 @@
                     <h2 style="font-family: 'Special Elite', cursive; font-size: 1.3rem; margin: 0 0 0.5rem 0;">${item.name}</h2>
                     <div class="price">$${item.price}</div>
                     <button 
-                        onclick="claimItem('${item.name}', '${item.price}')" 
+                        onclick="openRequestModal('${item.name}', '${item.price}')" 
                         ${!isAvailable ? 'disabled' : ''} 
                         style="width: 100%; margin-top: 1rem; padding: 0.75rem; background: var(--ink); color: var(--bg); border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer; text-transform: uppercase;">
                         ${translations[currentLang].buyBtn}
@@ -160,9 +210,43 @@
             renderGrid();
         }
 
-        function claimItem(name, price) {
-            alert(`Selected: ${name} ($${price})`);
+        function openRequestModal(name, price) {
+            selectedItemName = name;
+            selectedItemPrice = price;
+            document.getElementById('modal-title').innerText = `Request: ${name} ($${price})`;
+            document.getElementById('request-modal').style.display = 'flex';
         }
+
+        function closeModal() {
+            document.getElementById('request-modal').style.display = 'none';
+        }
+
+        // Handle Request Submission
+        document.getElementById('order-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const requestData = {
+                item: selectedItemName,
+                price: selectedItemPrice,
+                customer_name: document.getElementById('cust-name').value,
+                phone: document.getElementById('cust-phone').value,
+                address: document.getElementById('cust-address').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await fetch(FIREBASE_REQUESTS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                alert("Request sent! The curator will contact you shortly to confirm availability.");
+                closeModal();
+                document.getElementById('order-form').reset();
+            } catch (err) {
+                alert("Error sending request. Please try again.");
+            }
+        });
 
         loadInventory();
     </script>
