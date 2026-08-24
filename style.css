@@ -74,8 +74,8 @@ h1 {
     padding: 0 4px;
 }
 
-/* Modal Styling */
-#request-modal {
+/* Modal Overlay Fix */
+.modal-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -86,6 +86,10 @@ h1 {
     justify-content: center;
     align-items: center;
     z-index: 99999;
+}
+
+.modal-overlay.active {
+    display: flex !important;
 }
 
 .modal-content {
@@ -113,7 +117,6 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Modal Action Buttons */
 .btn {
     width: 100%;
     padding: 0.75rem;
