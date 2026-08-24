@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -130,7 +130,7 @@
                 <label>Delivery Address:</label>
                 <textarea id="cust-address" rows="3" required placeholder="Full shipping address"></textarea>
 
-                <button type="submit" style="width: 100%; padding: 0.75rem; background: var(--accent); color: white; border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer;">SEND REQUEST</button>
+                <button type="submit" id="submit-btn" style="width: 100%; padding: 0.75rem; background: var(--accent); color: white; border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer;">SEND REQUEST</button>
                 <button type="button" onclick="closeModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: transparent; border: 1px solid var(--border); cursor: pointer;">Cancel</button>
             </form>
         </div>
@@ -224,6 +224,9 @@
         // Handle Request Submission
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
             
             const requestData = {
                 item: selectedItemName,
@@ -235,16 +238,24 @@
             };
 
             try {
-                await fetch(FIREBASE_REQUESTS_URL, {
+                const res = await fetch(FIREBASE_REQUESTS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
                 });
-                alert("Request sent! The curator will contact you shortly to confirm availability.");
+                
+                if (res.ok) {
+                    alert("Request logged! The curator will contact you shortly.");
+                } else {
+                    alert("Firebase Rules Blocked Request! Make sure your Firebase Rules are set to public.");
+                }
                 closeModal();
                 document.getElementById('order-form').reset();
             } catch (err) {
-                alert("Error sending request. Please try again.");
+                alert("Network error sending request.");
+            } finally {
+                btn.innerText = "SEND REQUEST";
+                btn.disabled = false;
             }
         });
 
