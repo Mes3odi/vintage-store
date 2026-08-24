@@ -5,29 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE ARCHIVE // Vintage Curations</title>
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <!-- External CSS -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- defer ensures JS loads AFTER HTML parses -->
+    <script src="script.js" defer></script>
 </head>
 <body>
 
     <header>
         <h1>THE VINTAGE GAZETTE</h1>
         <div id="lang-selector">
-            <button class="lang-btn" onclick="setLang('en')"><b>EN</b></button> / 
-            <button class="lang-btn" onclick="setLang('fr')">FR</button> / 
-            <button class="lang-btn" onclick="setLang('ar')">AR</button>
+            <button class="lang-btn" id="btn-en"><b>EN</b></button> / 
+            <button class="lang-btn" id="btn-fr">FR</button> / 
+            <button class="lang-btn" id="btn-ar">AR</button>
         </div>
     </header>
 
-    <main class="grid" id="product-grid">
-        <!-- Products load dynamically from Firebase -->
-    </main>
+    <main class="grid" id="product-grid"></main>
 
-    <!-- Request Modal -->
-    <div id="request-modal">
+    <!-- Modal Form -->
+    <div id="request-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="modal-title">Request Item</h2>
             <form id="order-form">
@@ -41,12 +39,10 @@
                 <textarea id="cust-address" rows="3" required placeholder="Full address"></textarea>
 
                 <button type="submit" id="submit-btn" class="btn btn-primary">SEND REQUEST</button>
-                <button type="button" onclick="closeModal()" class="btn btn-secondary">CANCEL</button>
+                <button type="button" id="close-modal-btn" class="btn btn-secondary">CANCEL</button>
             </form>
         </div>
     </div>
 
-    <!-- External JavaScript -->
-    <script src="script.js"></script>
 </body>
 </html>
