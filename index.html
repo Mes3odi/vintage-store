@@ -4,104 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE ARCHIVE // Vintage Curations</title>
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #f4f0ea;
-            --ink: #1a1a1a;
-            --accent: #c85a32;
-            --border: #2c2c2c;
-        }
-        body {
-            background-color: var(--bg);
-            color: var(--ink);
-            font-family: 'Space Mono', monospace;
-            margin: 0;
-            padding: 2rem;
-            background-image: radial-gradient(#d3c9bc 0.75px, transparent 0.75px);
-            background-size: 16px 16px;
-        }
-        header {
-            border-bottom: 3px double var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding-bottom: 1rem;
-            margin-bottom: 3rem;
-        }
-        h1 {
-            font-family: 'Special Elite', cursive;
-            font-size: 2.5rem;
-            margin: 0;
-            letter-spacing: -1px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        .card {
-            border: 2px solid var(--border);
-            background: #fff;
-            padding: 1.5rem;
-            box-shadow: 4px 4px 0px var(--border);
-            transition: transform 0.1s ease;
-        }
-        .card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px var(--border);
-        }
-        .badge {
-            background: var(--accent);
-            color: #fff;
-            font-size: 0.75rem;
-            padding: 0.2rem 0.5rem;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        .price {
-            font-family: 'Special Elite', cursive;
-            font-size: 1.5rem;
-            margin-top: 1rem;
-        }
-        .lang-btn {
-            background: none;
-            border: none;
-            font-family: 'Space Mono', monospace;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 0 4px;
-        }
-        #request-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-        }
-        .modal-content {
-            background: var(--bg);
-            border: 3px solid var(--border);
-            padding: 2rem;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 8px 8px 0px var(--ink);
-            box-sizing: border-box;
-        }
-        .modal-content input, .modal-content textarea {
-            width: 100%;
-            padding: 0.6rem;
-            margin: 0.4rem 0 1rem 0;
-            border: 2px solid var(--border);
-            font-family: 'Space Mono', monospace;
-            box-sizing: border-box;
-        }
-    </style>
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -114,152 +22,31 @@
         </div>
     </header>
 
-    <main class="grid" id="product-grid"></main>
+    <main class="grid" id="product-grid">
+        <!-- Products load dynamically from Firebase -->
+    </main>
 
+    <!-- Request Modal -->
     <div id="request-modal">
         <div class="modal-content">
-            <h2 id="modal-title" style="font-family: 'Special Elite', cursive; margin-top: 0;">Request Item</h2>
+            <h2 id="modal-title">Request Item</h2>
             <form id="order-form">
-                <label>Your Name:</label>
+                <label for="cust-name">Your Name:</label>
                 <input type="text" id="cust-name" required placeholder="e.g. Alex">
 
-                <label>Phone / WhatsApp:</label>
+                <label for="cust-phone">Phone / WhatsApp:</label>
                 <input type="text" id="cust-phone" required placeholder="e.g. +212...">
 
-                <label>Delivery Address:</label>
+                <label for="cust-address">Delivery Address:</label>
                 <textarea id="cust-address" rows="3" required placeholder="Full address"></textarea>
 
-                <button type="submit" id="submit-btn" style="width: 100%; padding: 0.75rem; background: var(--accent); color: white; border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer;">SEND REQUEST</button>
-                <button type="button" onclick="closeModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: transparent; border: 1px solid var(--border); font-family: 'Space Mono', monospace; cursor: pointer;">CANCEL</button>
+                <button type="submit" id="submit-btn" class="btn btn-primary">SEND REQUEST</button>
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">CANCEL</button>
             </form>
         </div>
     </div>
 
-    <script>
-        const FIREBASE_PRODUCTS_URL = "https://vintage-archive-store-default-rtdb.firebaseio.com/products.json";
-        const FIREBASE_REQUESTS_URL = "https://vintage-archive-store-default-rtdb.firebaseio.com/requests.json";
-
-        const translations = {
-            en: { stockMsg: "Available Artifact", soldOut: "Lost in Time", buyBtn: "Request Piece", loading: "Unearthing relics..." },
-            fr: { stockMsg: "Pièce Disponible", soldOut: "Épuisé dans le Temps", buyBtn: "Demander la Pièce", loading: "Fouilles en cours..." },
-            ar: { stockMsg: "قطعة متوفرة", soldOut: "ضاعت في الزمن", buyBtn: "طلب القطعة", loading: "جاري البحث عن الأثريات..." }
-        };
-
-        let currentLang = 'en';
-        let rawProductsData = {};
-        let selectedItemName = "";
-        let selectedItemPrice = "";
-
-        async function loadInventory() {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-style: italic;">${translations[currentLang].loading}</p>`;
-
-            try {
-                const response = await fetch(FIREBASE_PRODUCTS_URL);
-                rawProductsData = await response.json();
-                renderGrid();
-            } catch (error) {
-                console.error("Error fetching relics:", error);
-                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--accent);">Failed to load inventory.</p>`;
-            }
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = '';
-
-            if (!rawProductsData) {
-                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">No relics found in the archives.</p>`;
-                return;
-            }
-
-            Object.keys(rawProductsData).forEach(key => {
-                const item = rawProductsData[key];
-                const isAvailable = parseInt(item.stock) > 0;
-
-                const card = document.createElement('article');
-                card.className = 'card';
-                
-                const safeName = item.name ? item.name.replace(/'/g, "\\'") : "Item";
-
-                card.innerHTML = `
-                    <div style="position: relative; margin-bottom: 1rem;">
-                        <img src="${item.image || 'https://via.placeholder.com/300x200?text=No+Photo'}" 
-                             alt="${safeName}" 
-                             style="width: 100%; height: 200px; object-fit: cover; border: 1px solid var(--border); filter: sepia(30%);">
-                        <span class="badge" style="position: absolute; top: 8px; right: 8px; background: ${isAvailable ? 'var(--accent)' : '#666'};">
-                            ${isAvailable ? translations[currentLang].stockMsg : translations[currentLang].soldOut}
-                        </span>
-                    </div>
-                    <h2 style="font-family: 'Special Elite', cursive; font-size: 1.3rem; margin: 0 0 0.5rem 0;">${item.name}</h2>
-                    <div class="price">$${item.price}</div>
-                    <button 
-                        onclick="openRequestModal('${safeName}', '${item.price}')" 
-                        ${!isAvailable ? 'disabled' : ''} 
-                        style="width: 100%; margin-top: 1rem; padding: 0.75rem; background: var(--ink); color: var(--bg); border: none; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer; text-transform: uppercase;">
-                        ${translations[currentLang].buyBtn}
-                    </button>
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
-
-        function setLang(lang) {
-            currentLang = lang;
-            document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-            renderGrid();
-        }
-
-        function openRequestModal(name, price) {
-            selectedItemName = name;
-            selectedItemPrice = price;
-            document.getElementById('modal-title').innerText = `Request: ${name} ($${price})`;
-            document.getElementById('request-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('request-modal').style.display = 'none';
-        }
-
-        document.getElementById('order-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "SENDING...";
-            btn.disabled = true;
-            
-            const requestData = {
-                item: selectedItemName,
-                price: selectedItemPrice,
-                customer_name: document.getElementById('cust-name').value,
-                phone: document.getElementById('cust-phone').value,
-                address: document.getElementById('cust-address').value,
-                timestamp: new Date().toISOString()
-            };
-
-            try {
-                const res = await fetch(FIREBASE_REQUESTS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
-                });
-                
-                if (res.ok) {
-                    alert("Request logged! The curator will contact you shortly.");
-                    closeModal();
-                    document.getElementById('order-form').reset();
-                } else {
-                    alert("Failed to submit. Please check your network connection.");
-                }
-            } catch (err) {
-                alert("Network error sending request.");
-            } finally {
-                btn.innerText = "SEND REQUEST";
-                btn.disabled = false;
-            }
-        });
-
-        loadInventory();
-    </script>
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
