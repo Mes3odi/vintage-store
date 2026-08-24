@@ -1,0 +1,135 @@
+:root {
+    --bg: #f4f0ea;
+    --ink: #1a1a1a;
+    --accent: #c85a32;
+    --border: #2c2c2c;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Mono', monospace;
+    margin: 0;
+    padding: 2rem;
+    background-image: radial-gradient(#d3c9bc 0.75px, transparent 0.75px);
+    background-size: 16px 16px;
+}
+
+header {
+    border-bottom: 3px double var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 1rem;
+    margin-bottom: 3rem;
+}
+
+h1 {
+    font-family: 'Special Elite', cursive;
+    font-size: 2.5rem;
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    border: 2px solid var(--border);
+    background: #fff;
+    padding: 1.5rem;
+    box-shadow: 4px 4px 0px var(--border);
+    transition: transform 0.1s ease;
+}
+
+.card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--border);
+}
+
+.badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.price {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+}
+
+.lang-btn {
+    background: none;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+/* Modal Styling */
+#request-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.modal-content {
+    background: var(--bg);
+    border: 3px solid var(--border);
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 8px 8px 0px var(--ink);
+    box-sizing: border-box;
+}
+
+.modal-content h2 {
+    font-family: 'Special Elite', cursive;
+    margin-top: 0;
+}
+
+.modal-content input, 
+.modal-content textarea {
+    width: 100%;
+    padding: 0.6rem;
+    margin: 0.4rem 0 1rem 0;
+    border: 2px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    box-sizing: border-box;
+}
+
+/* Modal Action Buttons */
+.btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-secondary {
+    margin-top: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+}
